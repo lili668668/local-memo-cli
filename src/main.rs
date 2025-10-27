@@ -20,6 +20,11 @@ enum Commands {
     },
     /// 列出所有備忘
     List,
+    /// 刪除指定的備忘
+    Remove {
+        /// 備忘的 ID
+        id: usize,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -91,17 +96,31 @@ fn list_memos() {
     println!("總共 {} 個備忘", store.memos.len());
 }
 
+fn remove_memo(id: usize) {
+    let mut store = load_memos();
+
+    if let Some(pos) = store.memos.iter().position(|m| m.id == id) {
+        let removed_memo = store.memos.remove(pos);
+        save_memos(&store);
+        println!("✓ 已刪除備忘 [{}]: {}", id, removed_memo.content);
+    } else {
+        println!("✗ 找不到 ID 為 {} 的備忘", id);
+    }
+}
+
 fn print_help() {
     println!("memo - 簡單的備忘錄管理工具");
     println!();
     println!("使用方式:");
     println!("  memo add <內容>    添加一個新備忘");
     println!("  memo list          列出所有備忘");
+    println!("  memo remove <ID>   刪除指定的備忘");
     println!("  memo help          顯示此幫助資訊");
     println!();
     println!("範例:");
     println!("  memo add \"明天要買牛奶\"");
     println!("  memo list");
+    println!("  memo remove 0");
 }
 
 fn main() {
@@ -110,6 +129,7 @@ fn main() {
     match cli.command {
         Some(Commands::Add { content }) => add_memo(content),
         Some(Commands::List) => list_memos(),
+        Some(Commands::Remove { id }) => remove_memo(id),
         None => print_help(),
     }
 }
